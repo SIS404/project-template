@@ -1,0 +1,10 @@
+name: Bug report
+description: Report a reproducible product problem
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and user impact
+      description: Expected behavior, actual behavior, steps and non-sensitive evidence.
+    validations:
+      required: true

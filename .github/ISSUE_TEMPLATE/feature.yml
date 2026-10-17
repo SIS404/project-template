@@ -1,0 +1,10 @@
+name: Product outcome
+description: Propose a concrete user outcome
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User problem and acceptance criteria
+      description: Explain the problem and simplest useful outcome.
+    validations:
+      required: true
