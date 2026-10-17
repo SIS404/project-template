@@ -115,21 +115,41 @@ def validate(scope, files, directories):
             check_links(scope, path, data, files)
 
 files, directories = {}, set()
+is_git = (ROOT / '.git').exists()
+candidates = None
+if is_git:
+    candidates = {os.fsdecode(p) for p in subprocess.check_output(
+        ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z']).split(b'\0') if p}
 for parent, dirs, names in os.walk(ROOT, followlinks=False):
-    dirs[:] = [d for d in dirs if d != '.git']
+    kept = []
     for d in dirs:
+        if d == '.git':
+            continue
         p = Path(parent) / d
         relative = p.relative_to(ROOT).as_posix()
+        if is_git and subprocess.run(['git', 'check-ignore', '-q', '--', relative + '/']).returncode == 0:
+            continue
+        kept.append(d)
         directories.add(relative)
         if p.is_symlink():
             fail('working-tree', relative, 'symlink not allowed')
-    for name in names:
-        p = Path(parent) / name
-        relative = p.relative_to(ROOT).as_posix()
+    dirs[:] = kept
+    if candidates is None:
+        for name in names:
+            p = Path(parent) / name
+            relative = p.relative_to(ROOT).as_posix()
+            if p.is_symlink():
+                fail('working-tree', relative, 'symlink not allowed')
+            else:
+                files[relative] = p.read_bytes()
+if candidates is not None:
+    for relative in candidates:
+        p = ROOT / relative
         if p.is_symlink():
             fail('working-tree', relative, 'symlink not allowed')
-        else:
+        elif p.is_file():
             files[relative] = p.read_bytes()
+            directories.update(str(parent) for parent in PurePosixPath(relative).parents if str(parent) != '.')
 validate('working-tree', files, directories)
 # Check Git's index independently: an unstaged fix must not hide a staged secret or broken structure.
 if (ROOT / '.git').exists():

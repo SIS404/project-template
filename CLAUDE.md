@@ -31,3 +31,7 @@ This template is MAINTENANCE. Its MIT license covers the template; decide the ne
 PUBLIC may be published. INTERNAL belongs only in private repositories. SECRET never belongs in Git. .env.example uses empty values only. Do not commit passwords, tokens, cookies, private keys, personal documents or raw datasets.
 Single-file limit: 10 MiB. Store models/media externally, binaries in Releases; evaluate LFS only when needed.
 Run `bash scripts/validate-structure.sh` for baseline structure, local links and secret-pattern checks. This does not test an application. Add stack-specific test/lint/build commands after selecting the stack. If a possible secret is detected, stop commits/push, remove it from working files and index, and report the path/category without printing the value. Historical exposure requires credential revocation and a separately authorized history repair.
+
+## Validation File Scope
+
+校验工作树中已跟踪及未忽略的待纳入文件，并独立校验暂存区。未跟踪且被 .gitignore 忽略的本地依赖、构建目录和 .env 不读取；已跟踪文件不能通过 .gitignore 逃避检查。空的未忽略顶级目录仍按目录规范检查。
